@@ -4,3 +4,6 @@
 * 支持issue名称作为状态名
 * 支持中文label
 * 时间校正为北京时间
+
+
+[demo](http://github.ghfan.me/statuspage_test/)
