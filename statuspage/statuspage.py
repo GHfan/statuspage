@@ -197,7 +197,7 @@ def get_severity(labels):
     label_map = dict(COLORED_LABELS)
     for label in labels:
         if label.color in label_map:
-            return label_map[label.color]
+            return label_map[label.color], label.name or label.color
     return None
 
 
@@ -230,18 +230,23 @@ def get_systems(repo, issues):
     for name in sorted(iter_systems(labels=repo.get_labels())):
         systems[name] = {
             "status": "operational",
+            "info": u"运行正常",
         }
 
     for issue in issues:
         if issue.state == "open":
             labels = issue.get_labels()
-            severity = get_severity(labels)
+            severity, info = get_severity(labels)
             affected_systems = list(iter_systems(labels))
             # shit is hitting the fan RIGHT NOW. Mark all affected systems
             for affected_system in affected_systems:
                 systems[affected_system]["status"] = severity
+                systems[affected_system]["info"] = info
     return systems
 
+def to_beijing_time(datetime_obj):
+    """From utc time to utc+8"""
+    return datetime_obj + timedelta(hours=8)
 
 def get_incidents(repo, issues):
     # loop over all issues in the past 90 days to get current and past incidents
@@ -250,7 +255,7 @@ def get_incidents(repo, issues):
     for issue in issues:
         labels = issue.get_labels()
         affected_systems = sorted(iter_systems(labels))
-        severity = get_severity(labels)
+        severity, info = get_severity(labels)
 
         # make sure that non-labeled issues are not displayed
         if not affected_systems or severity is None:
@@ -262,10 +267,11 @@ def get_incidents(repo, issues):
 
         # create an incident
         incident = {
-            "created": issue.created_at,
+            "created": to_beijing_time(issue.created_at),
             "title": issue.title,
             "systems": affected_systems,
             "severity": severity,
+            "info": info,
             "closed": issue.state == "closed",
             "body": issue.body,
             "updates": []
@@ -275,7 +281,7 @@ def get_incidents(repo, issues):
             # add comments by collaborators only
             if comment.user.login in collaborators:
                 incident["updates"].append({
-                    "created": comment.created_at,
+                    "created": to_beijing_time(comment.created_at),
                     "body": comment.body
                 })
 
@@ -295,7 +301,10 @@ def is_same_content(c1, c2):
             if isinstance(c, str):
                 c = bytes(c, "utf-8")
         else:
-            c = c.encode()
+            if isinstance(c, unicode):
+                c = bytes(c.encode("utf-8"))
+            elif isinstance(c, str):
+                c = bytes(c)
         return hashlib.sha1(c)
     return sha1(c1).hexdigest() == sha1(c2).hexdigest()
 

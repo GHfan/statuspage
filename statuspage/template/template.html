@@ -46,7 +46,7 @@
 				<ul class="systems">
 					{% for system, data in systems.items() %}
 					<li>
-						{{ system }} <span class="status {{ data.status }}">{{ data.status }}</span>
+						{{ system }} <span class="status {{ data.status }}">{{ data.info }}</span>
 					</li>
 					{% endfor %}
 				</ul>
@@ -55,12 +55,12 @@
 				{% if incidents %}
 					{% for incident in incidents %}
 					<div class="incident">
-						<span class="date">{{ incident.created }} UTC</span>
+						<span class="date">{{ incident.created }} UTC+8</span>
 
 						{% if incident.closed %}
-							<span class="label operational float-right">resolved</span>
+							<span class="label operational float-right">解决</span>
 						{% else %}
-							<span class="label {{ incident.severity }} float-right">{{ incident.severity }}</span>
+							<span class="label {{ incident.severity }} float-right">{{ incident.info }}</span>
 						{% endif %}
 						{% for system in incident.systems %}
 							<span class="label system float-right">{{ system }}</span>
