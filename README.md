@@ -6,4 +6,4 @@
 * 时间校正为北京时间
 
 
-[demo](http://github.ghfan.me/statuspage_test/)
+[demo](https://yaiba.github.io/statuspage_test/)
